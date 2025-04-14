@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Gesture Recognition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 40px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: #6c5ce7;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            height: 480px;
+        }
+        
+        .video-feed {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .recording-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            display: none;
+        }
+        
+        .recording-indicator.active {
+            display: block;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .gesture-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .gesture-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .gesture-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background-color: #6c5ce7;
+            border-color: #6c5ce7;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a49d8;
+            border-color: #5a49d8;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+        
+        .floating-text {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        .input-container .btn-record {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .detected-gesture {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 40px;
+        }
+        
+        .pulse {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Custom Gesture Recognition</h1>
+            <p class="lead">Record your own hand gestures and associate them with text</p>
+        </header>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Camera Feed</h5>
+                        <div id="recording-status" class="badge bg-secondary">Not Recording</div>
+                    </div>
+                    <div class="card-body p-0 position-relative">
+                        <div class="video-container">
+                            <img src="{{ url_for('video_feed') }}" alt="Video Feed" class="video-feed">
+                            <div id="recording-indicator" class="recording-indicator"></div>
+                        </div>
+                        <div id="floating-text" class="floating-text" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Current Detection</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="detected-gesture" class="detected-gesture">No gesture detected</div>
+                        <div id="detected-text" class="text-center fs-5"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Record New Gesture</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Enter a name and text to create a new custom hand gesture.</p>
+                        <div class="mb-3">
+                            <label for="gesture-name" class="form-label">Gesture Name</label>
+                            <input type="text" id="gesture-name" class="form-control" placeholder="Name this gesture (e.g., 'Hello', 'Stop')">
+                        </div>
+                        <div class="mb-3">
+                            <label for="gesture-text" class="form-label">Associated Text</label>
+                            <input type="text" id="gesture-text" class="form-control" placeholder="Enter text to show when this gesture is detected">
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button id="record-btn" class="btn btn-primary">Record Gesture</button>
+                            <button id="cancel-btn" class="btn btn-secondary" disabled>Cancel</button>
+                            <button id="clear-all-btn" class="btn btn-danger">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Saved Gestures</h5>
+                        <span id="gesture-count" class="badge bg-primary">0</span>
+                    </div>
+                    <div class="card-body gesture-table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Gesture Name</th>
+                                    <th>Text</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gesture-table-body">
+                                <!-- Gestures will be listed here -->
+                            </tbody>
+                        </table>
+                        <div id="no-gestures-msg" class="text-center text-muted my-4">
+                            No gestures recorded yet. Add your first gesture above.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for confirmation -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modal-message">
+                    Are you sure you want to delete all gestures?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-button">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 text-center text-muted">
+        <p>Custom Hand Gesture Recognition &copy; 2025</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const recordBtn = document.getElementById('record-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+            const gestureName = document.getElementById('gesture-name');
+            const gestureText = document.getElementById('gesture-text');
+            const recordingStatus = document.getElementById('recording-status');
+            const recordingIndicator = document.getElementById('recording-indicator');
+            const floatingText = document.getElementById('floating-text');
+            const detectedGesture = document.getElementById('detected-gesture');
+            const detectedText = document.getElementById('detected-text');
+            const gestureTableBody = document.getElementById('gesture-table-body');
+            const noGesturesMsg = document.getElementById('no-gestures-msg');
+            const gestureCount = document.getElementById('gesture-count');
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            const confirmButton = document.getElementById('confirm-button');
+            const modalMessage = document.getElementById('modal-message');
+            
+            // Variables
+            let isRecording = false;
+            let recordingInterval = null;
+            let gestures = {};
+            let deleteGestureName = null;
+            
+            // Load gestures at startup
+            loadGestures();
+            
+            // Poll current gesture every 500ms
+            setInterval(fetchCurrentGesture, 500);
+            
+            // Check recording status every 300ms when recording
+            function startRecordingStatusCheck() {
+                recordingInterval = setInterval(checkRecordingStatus, 300);
+            }
+            
+            function stopRecordingStatusCheck() {
+                clearInterval(recordingInterval);
+            }
+            
+            // Event Listeners
+            recordBtn.addEventListener('click', startRecording);
+            cancelBtn.addEventListener('click', cancelRecording);
+            clearAllBtn.addEventListener('click', confirmClearAll);
+            
+            // Key events for keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'r' || event.key === 'R') {
+                    // Only if record button is enabled and not already recording
+                    if (!recordBtn.disabled && !isRecording) {
+                        startRecording();
+                    }
+                } else if (event.key === 'c' || event.key === 'C') {
+                    if (!isRecording) {
+                        confirmClearAll();
+                    }
+                } else if (event.key === 'Escape') {
+                    if (isRecording) {
+                        cancelRecording();
+                    }
+                }
+            });
+            
+            // Functions
+            function startRecording() {
+                const name = gestureName.value.trim();
+                const text = gestureText.value.trim();
+                
+                if (!text) {
+                    showFloatingAlert('Please enter text for the gesture first');
+                    return;
+                }
+                
+                fetch('/start_recording', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        name: name,
+                        text: text 
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        isRecording = true;
+                        recordingStatus.textContent = 'Recording...';
+                        recordingStatus.classList.remove('bg-secondary');
+                        recordingStatus.classList.add('bg-danger');
+                        recordingIndicator.classList.add('active');
+                        recordBtn.disabled = true;
+                        cancelBtn.disabled = false;
+                        gestureName.disabled = true;
+                        gestureText.disabled = true;
+                        
+                        startRecordingStatusCheck();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting recording:', error);
+                    showFloatingAlert('Error starting recording');
+                });
+            }
+            
+            function cancelRecording() {
+                fetch('/cancel_recording')
+                .then(response => response.json())
+                .then(data => {
+                    resetRecordingUI();
+                })
+                .catch(error => {
+                    console.error('Error canceling recording:', error);
+                    showFloatingAlert('Error canceling recording');
+                    resetRecordingUI();
+                });
+            }
+            
+            function resetRecordingUI() {
+                isRecording = false;
+                recordingStatus.textContent = 'Not Recording';
+                recordingStatus.classList.remove('bg-danger');
+                recordingStatus.classList.add('bg-secondary');
+                recordingIndicator.classList.remove('active');
+                recordBtn.disabled = false;
+                cancelBtn.disabled = true;
+                gestureName.disabled = false;
+                gestureText.disabled = false;
+                stopRecordingStatusCheck();
+            }
+            
+            function checkRecordingStatus() {
+                fetch('/recording_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_recording) {
+                        if (data.countdown > 0) {
+                            showFloatingAlert(`Recording: ${data.countdown} frames remaining`);
+                        }
+                    } else {
+                        // Recording finished
+                        if (isRecording) {
+                            resetRecordingUI();
+                            showFloatingAlert('Gesture recorded successfully!', 'success');
+                            loadGestures();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking recording status:', error);
+                });
+            }
+            
+            function fetchCurrentGesture() {
+                if (!isRecording) {
+                    fetch('/current_gesture')
+                    .then(response => response.json())
+                    .then(data => {
+                        const oldGesture = detectedGesture.textContent;
+                        if (data.gesture !== "No Gestures" && data.gesture !== oldGesture) {
+                            detectedGesture.textContent = data.gesture;
+                            detectedGesture.classList.add('pulse');
+                            setTimeout(() => {
+                                detectedGesture.classList.remove('pulse');
+                            }, 600);
+                            
+                            if (data.text) {
+                                detectedText.textContent = data.text;
+                                detectedText.classList.add('pulse');
+                                setTimeout(() => {
+                                    detectedText.classList.remove('pulse');
+                                }, 600);
+                            } else {
+                                detectedText.textContent = '';
+                            }
+                        } else if (data.gesture === "No Gestures") {
+                            detectedGesture.textContent = "No gesture detected";
+                            detectedText.textContent = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching current gesture:', error);
+                    });
+                }
+            }
+            
+            function loadGestures() {
+                fetch('/get_gestures')
+                .then(response => response.json())
+                .then(data => {
+                    gestures = data.gestures;
+                    updateGestureTable();
+                })
+                .catch(error => {
+                    console.error('Error loading gestures:', error);
+                });
+            }
+            
+            function updateGestureTable() {
+                gestureTableBody.innerHTML = '';
+                const gestureNames = Object.keys(gestures);
+                
+                if (gestureNames.length === 0) {
+                    noGesturesMsg.style.display = 'block';
+                } else {
+                    noGesturesMsg.style.display = 'none';
+                    
+                    gestureNames.forEach(name => {
+                        const row = document.createElement('tr');
+                        const displayName = gestures[name].text === name ? name : name;
+                        row.innerHTML = `
+                            <td>${displayName}</td>
+                            <td>${gestures[name].text}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger delete-btn" data-gesture="${name}">
+                                    Delete
+                                </button>
+                            </td>
+                        `;
+                        gestureTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to delete buttons
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const gestureName = this.getAttribute('data-gesture');
+                            confirmDeleteGesture(gestureName);
+                        });
+                    });
+                }
+                
+                // Update gesture count
+                gestureCount.textContent = gestureNames.length;
+            }
+            
+            function confirmDeleteGesture(gestureName) {
+                deleteGestureName = gestureName;
+                modalMessage.textContent = `Are you sure you want to delete the gesture "${gestureName}"?`;
+                confirmButton.onclick = deleteGesture;
+                confirmModal.show();
+            }
+            
+            function deleteGesture() {
+                if (!deleteGestureName) return;
+                
+                fetch('/delete_gesture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: deleteGestureName }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showFloatingAlert(`Gesture "${deleteGestureName}" deleted`, 'success');
+                        loadGestures();
+                    } else {
+                        showFloatingAlert(`Error: ${data.error}`, 'danger');
+                    }
+                    confirmModal.hide();
+                    deleteGestureName = null;
+                })
+                .catch(error => {
+                    console.error('Error deleting gesture:', error);
+                    showFloatingAlert('Error deleting gesture', 'danger');
+                    confirmModal.hide();
+                    deleteGestureName = null;
+                });
+            }
+            
+            function confirmClearAll() {
+                deleteGestureName = null;
+                modalMessage.textContent = 'Are you sure you want to delete ALL gestures? This cannot be undone.';
+                confirmButton.onclick = clearAllGestures;
+                confirmModal.show();
+            }
+            
+            function clearAllGestures() {
+                fetch('/clear_all_gestures')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showFloatingAlert('All gestures cleared', 'success');
+                        loadGestures();
+                    }
+                    confirmModal.hide();
+                })
+                .catch(error => {
+                    console.error('Error clearing gestures:', error);
+                    showFloatingAlert('Error clearing gestures', 'danger');
+                    confirmModal.hide();
+                });
+            }
+            
+            function showFloatingAlert(message, type = 'warning') {
+                floatingText.textContent = message;
+                floatingText.style.display = 'block';
+                
+                // Set color based on type
+                if (type === 'success') {
+                    floatingText.style.backgroundColor = 'rgba(40, 167, 69, 0.8)';
+                } else if (type === 'danger') {
+                    floatingText.style.backgroundColor = 'rgba(220, 53, 69, 0.8)';
+                } else {
+                    floatingText.style.backgroundColor = 'rgba(255, 193, 7, 0.8)';
+                }
+                
+                setTimeout(() => {
+                    floatingText.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

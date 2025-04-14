@@ -1,0 +1,242 @@
+/* Main styles */
+body {
+    background-color: #f8f9fa;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-bottom: 40px;
+}
+
+header {
+    text-align: center;
+    padding: 30px 0;
+    margin-bottom: 20px;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: none;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #3a86ff;
+    color: white;
+    font-weight: 500;
+    border-bottom: none;
+}
+
+/* Video feed styles */
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: #000;
+    position: relative;
+}
+
+.video-feed {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#current-gesture {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Smart Home Appliance Cards */
+.appliance-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+}
+
+.appliance-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.appliance-card h5 {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.icon-container {
+    margin: 0 auto;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    margin-bottom: 15px;
+}
+
+.appliance-icon {
+    color: #3a86ff;
+    transition: all 0.3s ease;
+}
+
+/* Status indicators for appliances */
+.status {
+    font-weight: bold;
+    margin: 8px 0;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.appliance-card[data-state="ON"] .status {
+    background-color: #8ac926;
+    color: white;
+}
+
+.appliance-card[data-state="OFF"] .status {
+    background-color: #e5e5e5;
+    color: #666;
+}
+
+.appliance-card[data-state="OPEN"] .status {
+    background-color: #00b4d8;
+    color: white;
+}
+
+.appliance-card[data-state="LOCKED"] .status {
+    background-color: #e63946;
+    color: white;
+}
+
+.appliance-card[data-state="UNLOCKED"] .status {
+    background-color: #8ac926;
+    color: white;
+}
+
+/* Active device styling */
+.appliance-card.active .icon-container {
+    background-color: #3a86ff;
+}
+
+.appliance-card.active .appliance-icon {
+    color: white;
+}
+
+/* Gesture instructions */
+.gesture-instruction {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 8px;
+}
+
+/* Gesture guide */
+.gesture-item {
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 8px;
+    height: 100%;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.gesture-item:hover {
+    background-color: #e5e5ff;
+}
+
+.gesture-name {
+    font-weight: bold;
+    color: #3a86ff;
+    margin-bottom: 5px;
+}
+
+.gesture-description {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.gesture-action {
+    font-size: 0.8rem;
+    color: #ff9e00;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .video-feed {
+        width: 100%;
+        height: auto;
+    }
+    
+    .gesture-guide .col-6 {
+        padding: 5px;
+    }
+    
+    .gesture-item {
+        padding: 10px;
+    }
+    
+    .appliance-card {
+        padding: 10px 5px;
+    }
+    
+    .icon-container {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .appliance-icon {
+        font-size: 1.5em !important;
+    }
+}
+
+/* Animation for gesture detection */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 0.6s ease-in-out;
+}
+
+/* Animation for device activation */
+@keyframes deviceActivate {
+    0% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(1);
+    }
+    75% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.device-activate {
+    animation: deviceActivate 0.8s ease-in-out;
+}

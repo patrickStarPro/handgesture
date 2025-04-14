@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture-Controlled Smart Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gesture-Controlled Smart Home</h1>
+            <p class="lead">Control your home appliances with hand gestures</p>
+        </header>
+
+        <div class="row">
+            <!-- Camera feed and current gesture -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Camera Feed</h5>
+                        <div id="current-gesture" class="badge bg-primary">No Gesture</div>
+                    </div>
+                    <div class="card-body video-container">
+                        <img src="{{ url_for('video_feed') }}" alt="Video Feed" class="video-feed">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Home Controls -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Smart Home Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Light Bulb -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="HELLO">
+                                    <div class="icon-container">
+                                        <i class="fas fa-lightbulb fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>Light</h5>
+                                    <div class="status">OFF</div>
+                                    <div class="gesture-instruction">Use "HELLO" gesture to toggle</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Fan -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="THUMBS UP">
+                                    <div class="icon-container">
+                                        <i class="fas fa-fan fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>Fan</h5>
+                                    <div class="status">OFF</div>
+                                    <div class="gesture-instruction">Use "THUMBS UP" gesture to toggle</div>
+                                </div>
+                            </div>
+                            
+                            <!-- TV -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="PEACE">
+                                    <div class="icon-container">
+                                        <i class="fas fa-tv fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>TV</h5>
+                                    <div class="status">OFF</div>
+                                    <div class="gesture-instruction">Use "PEACE" gesture to toggle</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Curtains -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="STOP">
+                                    <div class="icon-container">
+                                        <i class="fas fa-blind fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>Curtains</h5>
+                                    <div class="status">CLOSED</div>
+                                    <div class="gesture-instruction">Use "STOP" gesture to toggle</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Thermostat -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="YES">
+                                    <div class="icon-container">
+                                        <i class="fas fa-temperature-high fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>Thermostat</h5>
+                                    <div class="status">22°C</div>
+                                    <div class="gesture-instruction">Use "YES" gesture to increase</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Door Lock -->
+                            <div class="col-md-4 mb-4">
+                                <div class="appliance-card text-center" data-gesture="NO">
+                                    <div class="icon-container">
+                                        <i class="fas fa-lock fa-3x appliance-icon"></i>
+                                    </div>
+                                    <h5>Door Lock</h5>
+                                    <div class="status">LOCKED</div>
+                                    <div class="gesture-instruction">Use "NO" gesture to toggle</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Gesture Guide</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row gesture-guide">
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">HELLO</div>
+                                    <div class="gesture-description">All fingers raised</div>
+                                    <div class="gesture-action">Toggle Lights</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">YES</div>
+                                    <div class="gesture-description">Index finger raised only</div>
+                                    <div class="gesture-action">Increase Temperature</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">NO</div>
+                                    <div class="gesture-description">Thumb to the left of index</div>
+                                    <div class="gesture-action">Toggle Door Lock</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">STOP</div>
+                                    <div class="gesture-description">All fingers extended, palm forward</div>
+                                    <div class="gesture-action">Toggle Curtains</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">THUMBS UP</div>
+                                    <div class="gesture-description">Thumb raised, others folded</div>
+                                    <div class="gesture-action">Toggle Fan</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="gesture-item">
+                                    <div class="gesture-name">PEACE</div>
+                                    <div class="gesture-description">Index and middle fingers raised</div>
+                                    <div class="gesture-action">Toggle TV</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 text-center text-muted">
+        <p>Gesture-Controlled Smart Home 2025</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

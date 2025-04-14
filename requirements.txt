@@ -1,0 +1,4 @@
+flask==2.3.3
+opencv-python==4.8.0.74
+mediapipe==0.10.13
+tensorflow>=2.14.0
